@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity  {
     private static final String tag = new String("Sandglass a1");
 
     private static final String sg_action = new String("com.example.sandglass.action.SANDGLASS");
+    private static final String presg_action = new String("com.example.sandglass.action.PRESANDGLASS");
 
     private EditText time_input = null;
     private TextView time_remain = null;
@@ -61,13 +62,39 @@ public class MainActivity extends AppCompatActivity  {
                     toast.show();
                     return;
                 }
-                Calendar c = Calendar.getInstance();
+                Calendar calender = Calendar.getInstance();
+                long currentRTC = calender.getTimeInMillis();
+                long finalAlarm = currentRTC + minutes * 60 * 1000;
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                Intent i = new Intent(sg_action);
-                i.setClass(MainActivity.this, SandGlassReceiver.class);
-                PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this, 0, i, 0);
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis() + 60000, pi);
-                Log.e(tag, "time stamp: " + c.getTimeInMillis());
+                Intent intent = new Intent(sg_action);
+                intent.setClass(MainActivity.this, SandGlassReceiver.class);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                        MainActivity.this,
+                        0,
+                        intent,
+                        0);
+                alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        finalAlarm,
+                        pendingIntent);
+
+                // If minute is more than 'vault', set a pre-alarm
+                final int vault = 1;
+                if (minutes > vault) {
+                    Log.e(tag, "set preAlarm");
+                    long preAlarm = finalAlarm - vault * 60 * 1000;
+                    Intent preIntent = new Intent(presg_action);
+                    preIntent.setClass(MainActivity.this, SandGlassReceiver.class);
+                    PendingIntent prePendingIntent = PendingIntent.getBroadcast(
+                            MainActivity.this,
+                            0,
+                            preIntent,
+                            0);
+                    alarmManager.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            preAlarm,
+                            prePendingIntent);
+                }
                 Log.e(tag, "Setup alarm done");
             }
         });

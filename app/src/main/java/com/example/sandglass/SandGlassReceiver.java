@@ -1,45 +1,42 @@
 package com.example.sandglass;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.IBinder;
 import android.util.Log;
+import com.example.sandglass.SandGlassService;
 
-public class SandGlassReceiver extends BroadcastReceiver {
+public class SandGlassReceiver extends BroadcastReceiver implements ServiceConnection {
     private static final String tag = new String("SandGlassReceiver");
-
+    private SandGlassService sandGlassService = null;
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.e(tag, "Call onReceive");
+        
+        // start service to play sound
+        Intent serviceIntent = new Intent();
+        serviceIntent.setClass(context, SandGlassService.class);
+        serviceIntent.putExtra("play", "true");
+        context.startService(serviceIntent);
+    }
 
-        AudioManager audioManager = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
-        int oldAudioMode = audioManager.getMode();
-        audioManager.setMode(AudioManager.MODE_RINGTONE);
-        try {
-            AssetManager am = context.getAssets();
-            MediaPlayer player = new MediaPlayer();
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.e(tag, "Call onServiceConnected");
+        sandGlassService = ((SandGlassService.SandGlassBinder)service).getService();
+    }
 
-            AssetFileDescriptor afd = am.openFd("beep.wav");
-            player.reset();
-            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    mediaPlayer.release();
-                    Log.e(tag, "Current mode: " + audioManager.getMode());
-                    Log.e(tag, "Recover old audio mode: " + oldAudioMode);
-                    audioManager.setMode(oldAudioMode);
-                }
-            });
-            player.setDataSource(afd);
-            player.prepare();
-            player.start();
-        } catch (Exception e) {
-            Log.e(tag, "Failed to play sound");
-            Log.e(tag, e.toString());
-        }
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        Log.e(tag, "Call onServiceDisconnected");
     }
 }

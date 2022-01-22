@@ -11,13 +11,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SandGlass">
+        <service
+            android:name=".SandGlassService"
+            android:enabled="true"
+            android:exported="true"></service>
+
         <receiver
-            android:name="com.example.sandglass.SandGlassReceiver"
+            android:name=".SandGlassReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.example.sandglass.action.SANDGLASS">
-                </action>
+                <action android:name="com.example.sandglass.action.SANDGLASS"></action>
+                <action android:name="com.example.sandglass.action.PRESANDGLASS"></action>
             </intent-filter>
         </receiver>
 
