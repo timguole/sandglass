@@ -15,28 +15,18 @@ import android.os.IBinder;
 import android.util.Log;
 import com.example.sandglass.SandGlassService;
 
-public class SandGlassReceiver extends BroadcastReceiver implements ServiceConnection {
+public class SandGlassReceiver extends BroadcastReceiver {
     private static final String tag = new String("SandGlassReceiver");
     private SandGlassService sandGlassService = null;
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.e(tag, "Call onReceive");
+        Log.e(tag, "intent action: " + intent.getAction());
         
         // start service to play sound
         Intent serviceIntent = new Intent();
         serviceIntent.setClass(context, SandGlassService.class);
         serviceIntent.putExtra("play", "true");
         context.startService(serviceIntent);
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        Log.e(tag, "Call onServiceConnected");
-        sandGlassService = ((SandGlassService.SandGlassBinder)service).getService();
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        Log.e(tag, "Call onServiceDisconnected");
     }
 }
