@@ -2,37 +2,37 @@ package com.example.sandglass;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Calendar;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private static final String tag = new String("Sandglass a1");
 
     private static final String sg_action = new String("com.example.sandglass.action.SANDGLASS");
     private static final String presg_action = new String("com.example.sandglass.action.PRESANDGLASS");
 
+    private SandGlassService sandGlassService = null;
+    private Intent serviceIntent = null;
+
     private EditText time_input = null;
-    private TextView time_remain = null;
+    private TextView current_alarm = null;
     private Button btn_start = null;
     private Button btn_cancel = null;
 
     private void initUI() {
         time_input = findViewById(R.id.time_input);
-        time_remain = findViewById(R.id.time_remain);
+        current_alarm = findViewById(R.id.current_alarm);
         btn_start = findViewById(R.id.btn_start);
         btn_cancel = findViewById(R.id.btn_cancel);
     }
@@ -42,12 +42,19 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         Log.e(tag, "Call onCreate");
 
+        serviceIntent = new Intent(this, SandGlassService.class);
+        startService(serviceIntent);
+
         setContentView(R.layout.activity_main);
         initUI();
+
         btn_start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String s = time_input.getText().toString();
-                Toast toast = Toast.makeText(MainActivity.this, "分钟数必须大于零", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(
+                        MainActivity.this,
+                        "分钟数必须是大于零的整数",
+                        Toast.LENGTH_LONG);
                 int minutes = 0;
 
                 try {
@@ -62,40 +69,16 @@ public class MainActivity extends AppCompatActivity  {
                     toast.show();
                     return;
                 }
-                Calendar calender = Calendar.getInstance();
-                long currentRTC = calender.getTimeInMillis();
-                long finalAlarm = currentRTC + minutes * 60 * 1000;
-                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                Intent intent = new Intent(sg_action);
-                intent.setClass(MainActivity.this, SandGlassReceiver.class);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                        MainActivity.this,
-                        0,
-                        intent,
-                        0);
-                alarmManager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        finalAlarm,
-                        pendingIntent);
-
-                // If minute is more than 'vault', set a pre-alarm
-                final int vault = 1;
-                if (minutes > vault) {
-                    Log.e(tag, "set preAlarm");
-                    long preAlarm = finalAlarm - vault * 60 * 1000;
-                    Intent preIntent = new Intent(presg_action);
-                    preIntent.setClass(MainActivity.this, SandGlassReceiver.class);
-                    PendingIntent prePendingIntent = PendingIntent.getBroadcast(
+                if (sandGlassService != null) {
+                    sandGlassService.setSandGlass(minutes);
+                    showCurrentAlarm();
+                    disableUIOnSet();
+                } else {
+                    Toast.makeText(
                             MainActivity.this,
-                            0,
-                            preIntent,
-                            0);
-                    alarmManager.setAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            preAlarm,
-                            prePendingIntent);
+                            "无法绑定到后台服务",
+                            Toast.LENGTH_LONG).show();
                 }
-                Log.e(tag, "Setup alarm done");
             }
         });
 
@@ -113,12 +96,15 @@ public class MainActivity extends AppCompatActivity  {
     protected void onStart() {
         super.onStart();
         Log.e(tag, "Call onStart");
+        boolean bindStatus = bindService(serviceIntent, this, BIND_AUTO_CREATE);
+        Log.e(tag, "bind status: " + bindStatus);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.e(tag, "Call onResume");
+       showCurrentAlarm();
     }
 
     @Override
@@ -137,11 +123,54 @@ public class MainActivity extends AppCompatActivity  {
     protected void onStop() {
         super.onStop();
         Log.e(tag, "Call onStop");
+        unbindService(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopService(serviceIntent);
         Log.e(tag, "Call onDestroy");
+    }
+
+    private void showCurrentAlarm() {
+        Log.e(tag, "Call showCurrentAlarm");
+        if (sandGlassService == null) {
+            Log.e(tag, "service is null");
+            return;
+        }
+
+        long timestamp = sandGlassService.getSandGlass();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timestamp);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        String t = String.format("%02d:%02d:%02d响铃", hour, minute, second);
+        current_alarm.setText(t);
+        Log.e(tag, t);
+    }
+
+    private void disableUIOnSet() {
+        btn_start.setClickable(false);
+        time_input.setText(new String(""));
+        time_input.setEnabled(false);
+    }
+
+    private void enableUIOnCancel() {
+        btn_start.setClickable(true);
+        time_input.setEnabled(true);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.e(tag, "Call onServiceConnected");
+        sandGlassService = ((SandGlassService.SandGlassBinder)service).getService();
+        showCurrentAlarm();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        Log.e(tag, "Call onServiceDisconnected");
     }
 }

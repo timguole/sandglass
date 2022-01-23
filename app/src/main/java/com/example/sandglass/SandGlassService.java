@@ -13,12 +13,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.nio.CharBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Calendar;
 
 public class SandGlassService extends Service {
     private static final String tag = new String("SandGlassService");
     private static final String sg_action = new String("com.example.sandglass.action.SANDGLASS");
     private static final String presg_action = new String("com.example.sandglass.action.PRESANDGLASS");
+    private static final String timestampFile = new String("timestamp.txt");
 
     private MediaPlayer player = new MediaPlayer();
     private SandGlassBinder sandGlassBinder = new SandGlassBinder();
@@ -29,32 +37,88 @@ public class SandGlassService extends Service {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Log.e(tag, "Call onCreate");
+        readTimestamp();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flag, int startId) {
         Log.e(tag, "Call onStartCommand");
         if (intent == null) {
-            return START_NOT_STICKY;
+            return START_STICKY;
         }
         String data = intent.getStringExtra("play");
         if (data != null) {
+            Log.e(tag, "start and play");
             startBeep();
+        } else {
+            Log.e(tag, "start but not play");
         }
-        return START_NOT_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.e(tag, "Call onDestroy");
-        player.release();
+        return START_STICKY;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         Log.e(tag, "Call onBind");
         return sandGlassBinder;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.e(tag, "Call onDestroy");
+        saveTimestamp();
+        player.release();
+    }
+
+    private void readTimestamp() {
+        Log.e(tag, "Call readTimestamp");
+        File f = null;
+        FileReader fileReader = null;
+        String line = null;
+        BufferedReader bufferedReader = null;
+
+        try {
+         File baseDir = getFilesDir();
+            String path = Paths.get(baseDir.toString(), timestampFile).toString();
+            Log.e(tag, path);
+            f = new File(path);
+            f.createNewFile();
+            bufferedReader = new BufferedReader(new FileReader(f));
+            line = bufferedReader.readLine();
+            bufferedReader.close();
+        } catch (Exception e) {
+            Log.e(tag, e.toString());
+            return;
+        }
+
+        try {
+            if (line == null) {
+                Log.e(tag, "No data in file");
+                return;
+            }
+            sandGlassInMilli = Long.parseLong(line);
+        } catch (Exception e) {
+            Log.e(tag, e.toString());
+        }
+        Log.e(tag, "read back timestamp from file: " + line);
+        Log.e(tag, "timestamp: " + sandGlassInMilli);
+    }
+
+    private void saveTimestamp() {
+        Log.e(tag, "Call saveTimestamp");
+        try {
+            File baseDir = getFilesDir();
+            String path = Paths.get(baseDir.toString(), timestampFile).toString();
+            File f = new File(path);
+            f.createNewFile();
+            FileWriter fileWriter = new FileWriter(f);
+            fileWriter.write(Long.toString(sandGlassInMilli));
+            fileWriter.close();
+        } catch (Exception e) {
+            Log.e(tag, e.toString());
+        }
     }
 
     public void setSandGlass(int minutes) {
@@ -64,7 +128,7 @@ public class SandGlassService extends Service {
         }
         Calendar calender = Calendar.getInstance();
         long currentRTC = calender.getTimeInMillis();
-        long finalAlarm = currentRTC + minutes * 60 * 1000;
+        sandGlassInMilli = currentRTC + minutes * 60 * 1000;
         AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(sg_action);
         intent.setClass(this, SandGlassReceiver.class);
@@ -75,14 +139,14 @@ public class SandGlassService extends Service {
                 0);
         alarmManager.setAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                finalAlarm,
+                sandGlassInMilli,
                 pendingIntent);
 
         // If minute is more than 'vault', set a pre-alarm
         final int vault = 1;
         if (minutes > vault) {
             Log.e(tag, "set preAlarm");
-            long preAlarm = finalAlarm - vault * 60 * 1000;
+            long preAlarm = sandGlassInMilli - vault * 60 * 1000;
             Intent preIntent = new Intent(presg_action);
             preIntent.setClass(this, SandGlassReceiver.class);
             PendingIntent prePendingIntent = PendingIntent.getBroadcast(
@@ -105,6 +169,8 @@ public class SandGlassService extends Service {
 
     public void cancelSandGlass() {
         Log.e(tag, "Call cancelSandGlass");
+        // TODO: cancel pending intent in alarm manager service
+        sandGlassInMilli = 0;
     }
 
     public void startBeep() {

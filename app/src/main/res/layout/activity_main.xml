@@ -8,32 +8,36 @@
 
     <EditText
         android:id="@+id/time_input"
-        android:layout_width="236dp"
-        android:layout_height="72dp"
+        android:layout_width="389dp"
+        android:layout_height="101dp"
         android:ems="10"
         android:hint="倒计时分钟数"
         android:inputType="number"
-        android:textSize="34sp"
+        android:textColor="#000000"
+        android:textSize="48sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/time_remain"
-        android:layout_width="237dp"
-        android:layout_height="65dp"
-        android:textSize="24sp"
+        android:id="@+id/current_alarm"
+        android:layout_width="390dp"
+        android:layout_height="94dp"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="48sp"
+        android:typeface="monospace"
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintStart_toStartOf="@+id/time_input"
         app:layout_constraintTop_toBottomOf="@+id/time_input" />
 
     <Button
         android:id="@+id/btn_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="179dp"
+        android:layout_height="77dp"
         android:text="开始"
-        android:textSize="34sp"
+        android:textSize="48sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/time_input"
         app:layout_constraintTop_toTopOf="@+id/guideline2"
@@ -41,10 +45,10 @@
 
     <Button
         android:id="@+id/btn_cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="174dp"
+        android:layout_height="77dp"
         android:text="取消"
-        android:textSize="34sp"
+        android:textSize="48sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/time_input"
         app:layout_constraintTop_toTopOf="@+id/guideline2" />
