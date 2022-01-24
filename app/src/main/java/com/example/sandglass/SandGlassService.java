@@ -137,7 +137,7 @@ public class SandGlassService extends Service {
                 0,
                 intent,
                 0);
-        alarmManager.setAndAllowWhileIdle(
+        alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 sandGlassInMilli,
                 pendingIntent);
@@ -154,7 +154,7 @@ public class SandGlassService extends Service {
                     0,
                     preIntent,
                     0);
-            alarmManager.setAndAllowWhileIdle(
+            alarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     preAlarm,
                     prePendingIntent);

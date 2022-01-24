@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 if (sandGlassService != null) {
                     sandGlassService.setSandGlass(minutes);
                     showCurrentAlarm();
-                    disableUIOnSet();
+                    updateUI();
                 } else {
                     Toast.makeText(
                             MainActivity.this,
@@ -140,26 +140,56 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             return;
         }
 
-        long timestamp = sandGlassService.getSandGlass();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(timestamp);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        int second = calendar.get(Calendar.SECOND);
-        String t = String.format("%02d:%02d:%02d响铃", hour, minute, second);
+        Calendar now = Calendar.getInstance();
+        long currentInMilli = now.getTimeInMillis();
+        long alarmInMilli = sandGlassService.getSandGlass();
+        boolean alarmIsValid = (currentInMilli < alarmInMilli);
+        String t = null;
+
+        Log.e(tag, "now: " + currentInMilli);
+        Log.e(tag, "alm: " + alarmInMilli);
+        Log.e(tag, "is valid: " + alarmIsValid);
+
+
+        if (alarmIsValid) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(alarmInMilli);
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int minute = calendar.get(Calendar.MINUTE);
+            int second = calendar.get(Calendar.SECOND);
+            t = String.format("%02d:%02d:%02d响铃", hour, minute, second);
+            Log.e(tag, t);
+        } else {
+            t = new String("没有活跃闹钟");
+        }
         current_alarm.setText(t);
-        Log.e(tag, t);
+
     }
 
-    private void disableUIOnSet() {
-        btn_start.setClickable(false);
-        time_input.setText(new String(""));
-        time_input.setEnabled(false);
-    }
+    // Only one alarm is allowed. A new alarm can be set only after
+    // the current valid alarm is cancelled or there is no valid alarm.
+    //
+    // If there is no valid alarm, the 'cancel' button is not enabled and
+    // other widgets are enabled.
+    private void updateUI() {
+        if (sandGlassService == null) {
+            return;
+        }
+        Calendar calendar = Calendar.getInstance();
+        long currentInMilli = calendar.getTimeInMillis();
+        long alarmInMilli = sandGlassService.getSandGlass();
+        boolean alarmIsValid = (currentInMilli < alarmInMilli);
 
-    private void enableUIOnCancel() {
-        btn_start.setClickable(true);
-        time_input.setEnabled(true);
+        if (alarmIsValid) {
+            btn_start.setEnabled(false);
+            time_input.setText(new String(""));
+            time_input.setEnabled(false);
+            btn_cancel.setEnabled(true);
+        } else {
+            btn_start.setEnabled(true);
+            time_input.setEnabled(true);
+            btn_cancel.setEnabled(false);
+        }
     }
 
     @Override
@@ -167,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Log.e(tag, "Call onServiceConnected");
         sandGlassService = ((SandGlassService.SandGlassBinder)service).getService();
         showCurrentAlarm();
+        updateUI();
     }
 
     @Override
