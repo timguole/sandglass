@@ -24,8 +24,8 @@ import java.util.Calendar;
 
 public class SandGlassService extends Service {
     private static final String tag = new String("SandGlassService");
-    private static final String sg_action = new String("com.example.sandglass.action.SANDGLASS");
-    private static final String presg_action = new String("com.example.sandglass.action.PRESANDGLASS");
+    private static final String sg_action = String.valueOf(R.string.sand_glass_action);
+    private static final String presg_action = String.valueOf(R.string.pre_sand_glass_action);
     private static final String timestampFile = new String("timestamp.txt");
 
     private MediaPlayer player = new MediaPlayer();

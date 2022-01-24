@@ -19,9 +19,6 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private static final String tag = new String("Sandglass a1");
 
-    private static final String sg_action = new String("com.example.sandglass.action.SANDGLASS");
-    private static final String presg_action = new String("com.example.sandglass.action.PRESANDGLASS");
-
     private SandGlassService sandGlassService = null;
     private Intent serviceIntent = null;
 
@@ -53,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 String s = time_input.getText().toString();
                 Toast toast = Toast.makeText(
                         MainActivity.this,
-                        "分钟数必须是大于零的整数",
+                        R.string.on_invalid_input,
                         Toast.LENGTH_LONG);
                 int minutes = 0;
 
@@ -84,10 +81,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Log.e(tag, "send broadcast");
-                Intent i = new Intent(sg_action);
-                i.setClass(MainActivity.this, SandGlassReceiver.class);
-                sendBroadcast(i);
+                Log.e(tag, "on btn_cancel clicked");
             }
         });
     }
@@ -150,14 +144,13 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Log.e(tag, "alm: " + alarmInMilli);
         Log.e(tag, "is valid: " + alarmIsValid);
 
-
         if (alarmIsValid) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(alarmInMilli);
             int hour = calendar.get(Calendar.HOUR_OF_DAY);
             int minute = calendar.get(Calendar.MINUTE);
             int second = calendar.get(Calendar.SECOND);
-            t = String.format("%02d:%02d:%02d响铃", hour, minute, second);
+            t = String.format("%02d:%02d:%02d 响铃", hour, minute, second);
             Log.e(tag, t);
         } else {
             t = new String("没有活跃闹钟");
