@@ -24,8 +24,6 @@ import java.util.Calendar;
 
 public class SandGlassService extends Service {
     private static final String tag = new String("SandGlassService");
-    private static final String sg_action = String.valueOf(R.string.sand_glass_action);
-    private static final String presg_action = String.valueOf(R.string.pre_sand_glass_action);
     private static final String timestampFile = new String("timestamp.txt");
 
     private MediaPlayer player = new MediaPlayer();
@@ -130,8 +128,8 @@ public class SandGlassService extends Service {
         long currentRTC = calender.getTimeInMillis();
         sandGlassInMilli = currentRTC + minutes * 60 * 1000;
         AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-        Intent intent = new Intent(sg_action);
-        intent.setClass(this, SandGlassReceiver.class);
+        Intent intent = new Intent(getString(R.string.sand_glass_action));
+        //intent.setClass(this, SandGlassReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this,
                 0,
@@ -147,7 +145,8 @@ public class SandGlassService extends Service {
         if (minutes > vault) {
             Log.e(tag, "set preAlarm");
             long preAlarm = sandGlassInMilli - vault * 60 * 1000;
-            Intent preIntent = new Intent(presg_action);
+            Intent preIntent = new Intent(
+                    getString(R.string.pre_sand_glass_action));
             preIntent.setClass(this, SandGlassReceiver.class);
             PendingIntent prePendingIntent = PendingIntent.getBroadcast(
                     this,
