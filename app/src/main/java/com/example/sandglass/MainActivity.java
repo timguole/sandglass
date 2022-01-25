@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     private Button btn_start = null;
     private Button btn_cancel = null;
 
-    private final MyReceiver myReceiver = new MyReceiver();
+    private final UIReceiver uiReceiver = new UIReceiver();
 
     private void initUI() {
         time_input = findViewById(R.id.time_input);
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                 } else {
                     Toast.makeText(
                             MainActivity.this,
-                            "无法绑定到后台服务",
+                            R.string.service_not_available,
                             Toast.LENGTH_LONG).show();
                 }
             }
@@ -88,6 +88,15 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.e(tag, "on btn_cancel clicked");
+                if (sandGlassService == null) {
+                    Toast.makeText(
+                            MainActivity.this,
+                            R.string.service_not_available,
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                sandGlassService.cancelSandGlass();
+                updateUI();
             }
         });
     }
@@ -103,10 +112,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         super.onResume();
         Log.e(tag, "Call onResume, register receiver");
         IntentFilter filter =new IntentFilter(
-                getString(R.string.sand_glass_action));
-        filter.addAction(getString(R.string.sand_glass_action));
-        registerReceiver(myReceiver, filter);
-       updateUI();
+                getString(R.string.update_ui));
+        filter.addAction(getString(R.string.update_ui));
+        registerReceiver(uiReceiver, filter);
+        updateUI();
     }
 
     @Override
@@ -119,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     protected void onPause() {
         super.onPause();
         Log.e(tag, "Call onPause, unregister receiver");
-        unregisterReceiver(myReceiver);
+        unregisterReceiver(uiReceiver);
     }
 
     @Override
@@ -184,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Log.e(tag, "Call onServiceDisconnected");
     }
 
-    public class MyReceiver extends BroadcastReceiver {
+    public class UIReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e(tag, "Call onReceive");

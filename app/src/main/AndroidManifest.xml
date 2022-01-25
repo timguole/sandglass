@@ -21,8 +21,8 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="@ing/sand_glass_action"></action>
-                <action android:name="@string/pre_sand_glass_action"></action>
+                <action android:name="@string/sand_glass_action" />
+                <action android:name="@string/pre_sand_glass_action" />
             </intent-filter>
         </receiver>
 

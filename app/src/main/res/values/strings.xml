@@ -2,8 +2,10 @@
     <string name="app_name">Sand Glass</string>
     <string name="sand_glass_action">com.example.sandglass.action.SANDGLASS</string>
     <string name="pre_sand_glass_action">com.example.sandglass.action.PRESANDGLASS</string>
+    <string name="update_ui">com.example.sandglass.action.UPDATEUI</string>
     <string name="btn_start">开始</string>
     <string name="btn_cancel">取消</string>
     <string name="on_invalid_input">分钟数必须是大于零的整数</string>
     <string name="input_hint">倒计时分钟数</string>
+    <string name="service_not_available">无法绑定到后台服务</string>
 </resources>

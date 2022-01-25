@@ -50,6 +50,13 @@ public class SandGlassService extends Service {
         if (data != null) {
             Log.e(tag, "start and play");
             startBeep();
+            String updateUI = intent.getStringExtra("updateUI");
+            if (updateUI != null) {
+                Log.e(tag, "update ui");
+                Intent uiIntent = new Intent();
+                uiIntent.setAction(getString(R.string.update_ui));
+                sendBroadcast(uiIntent);
+            }
         } else {
             Log.e(tag, "start but not play");
         }
@@ -129,7 +136,7 @@ public class SandGlassService extends Service {
         sandGlassInMilli = currentRTC + minutes * 60 * 1000;
         AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(getString(R.string.sand_glass_action));
-        //intent.setClass(this, SandGlassReceiver.class);
+        intent.setClass(this, SandGlassReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this,
                 0,
@@ -168,7 +175,28 @@ public class SandGlassService extends Service {
 
     public void cancelSandGlass() {
         Log.e(tag, "Call cancelSandGlass");
-        // TODO: cancel pending intent in alarm manager service
+
+        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+        Intent intent = new Intent(getString(R.string.sand_glass_action));
+        intent.setClass(this, SandGlassReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                intent,
+                0);
+        alarmManager.cancel(pendingIntent);
+
+        Intent preIntent = new Intent(
+                getString(R.string.pre_sand_glass_action));
+        preIntent.setClass(this, SandGlassReceiver.class);
+        PendingIntent prePendingIntent = PendingIntent.getBroadcast(
+                this,
+                0,
+                preIntent,
+                0);
+        alarmManager.cancel(prePendingIntent);
+
+        // reset timestamp
         sandGlassInMilli = 0;
     }
 

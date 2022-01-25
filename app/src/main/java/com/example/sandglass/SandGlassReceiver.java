@@ -27,6 +27,10 @@ public class SandGlassReceiver extends BroadcastReceiver {
         Intent serviceIntent = new Intent();
         serviceIntent.setClass(context, SandGlassService.class);
         serviceIntent.putExtra("play", "true");
+        if (intent.getAction().equals(
+                context.getString(R.string.sand_glass_action))) {
+            serviceIntent.putExtra("updateUI", "true");
+        }
         context.startService(serviceIntent);
     }
 }
