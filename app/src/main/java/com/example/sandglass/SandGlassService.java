@@ -148,7 +148,7 @@ public class SandGlassService extends Service {
                 pendingIntent);
 
         // If minute is more than 'vault', set a pre-alarm
-        final int vault = 1;
+        final int vault = 5;
         if (minutes > vault) {
             Log.e(tag, "set preAlarm");
             long preAlarm = sandGlassInMilli - vault * 60 * 1000;
