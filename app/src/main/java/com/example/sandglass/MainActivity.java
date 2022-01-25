@@ -20,7 +20,7 @@ import android.widget.Toast;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
-    private static final String tag = new String("Sandglass a1");
+    private static final String tag = "SandGlass a1";
 
     private SandGlassService sandGlassService = null;
     private Intent serviceIntent = null;
@@ -59,10 +59,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
                         MainActivity.this,
                         R.string.on_invalid_input,
                         Toast.LENGTH_LONG);
-                int minutes = 0;
+                long minutes;
 
                 try {
-                    minutes = Integer.parseInt(s);
+                    minutes = Long.parseLong(s);
                 } catch (NumberFormatException nfe) {
                     Log.e(tag, "Input is not a number: \"" + s + "\"");
                     toast.show();
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         long currentInMilli = now.getTimeInMillis();
         long alarmInMilli = sandGlassService.getSandGlass();
         boolean alarmIsValid = (currentInMilli < alarmInMilli);
-        String t = null;
+        String t;
 
         if (alarmIsValid) {
             Calendar calendar = Calendar.getInstance();
@@ -169,14 +169,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             t = String.format("%02d:%02d:%02d 响铃", hour, minute, second);
             Log.e(tag, t);
             btn_start.setEnabled(false);
-            time_input.setText(new String(""));
+            time_input.setText("");
             time_input.setEnabled(false);
             btn_cancel.setEnabled(true);
         } else {
             btn_start.setEnabled(true);
             time_input.setEnabled(true);
             btn_cancel.setEnabled(false);
-            t = new String("没有活跃闹钟");
+            t = getString(R.string.no_active_alarm);
         }
         current_alarm.setText(t);
     }

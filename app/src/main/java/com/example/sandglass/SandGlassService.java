@@ -10,24 +10,20 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.nio.CharBuffer;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Calendar;
 
 public class SandGlassService extends Service {
-    private static final String tag = new String("SandGlassService");
-    private static final String timestampFile = new String("timestamp.txt");
+    private static final String tag =  "SandGlassService";
+    private static final String timestampFile = "timestamp.txt";
 
     private MediaPlayer player = new MediaPlayer();
-    private SandGlassBinder sandGlassBinder = new SandGlassBinder();
+    private final SandGlassBinder sandGlassBinder = new SandGlassBinder();
     private long sandGlassInMilli = 0;
 
     public SandGlassService() {
@@ -80,7 +76,6 @@ public class SandGlassService extends Service {
     private void readTimestamp() {
         Log.e(tag, "Call readTimestamp");
         File f = null;
-        FileReader fileReader = null;
         String line = null;
         BufferedReader bufferedReader = null;
 
@@ -126,7 +121,7 @@ public class SandGlassService extends Service {
         }
     }
 
-    public void setSandGlass(int minutes) {
+    public void setSandGlass(long minutes) {
         Log.e(tag, "Call setSandGlass: " + minutes);
         if (minutes <= 0) {
             return;

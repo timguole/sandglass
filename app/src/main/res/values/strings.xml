@@ -8,4 +8,5 @@
     <string name="on_invalid_input">分钟数必须是大于零的整数</string>
     <string name="input_hint">倒计时分钟数</string>
     <string name="service_not_available">无法绑定到后台服务</string>
+    <string name="no_active_alarm">没有活跃闹钟</string>
 </resources>

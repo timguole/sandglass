@@ -16,7 +16,7 @@ import android.util.Log;
 import com.example.sandglass.SandGlassService;
 
 public class SandGlassReceiver extends BroadcastReceiver {
-    private static final String tag = new String("SandGlassReceiver");
+    private static final String tag =  "SandGlassReceiver";
     private SandGlassService sandGlassService = null;
     @Override
     public void onReceive(Context context, Intent intent) {
