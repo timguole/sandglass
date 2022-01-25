@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sand Glass</string>
+    <string name="app_name">沙漏</string>
     <string name="sand_glass_action">com.example.sandglass.action.SANDGLASS</string>
     <string name="pre_sand_glass_action">com.example.sandglass.action.PRESANDGLASS</string>
     <string name="update_ui">com.example.sandglass.action.UPDATEUI</string>
