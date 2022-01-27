@@ -19,25 +19,16 @@ import android.widget.Toast;
 
 import java.util.Calendar;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
+public class MainActivity extends AppCompatActivity
+        implements ServiceConnection, View.OnClickListener {
     private static final String tag = "SandGlass a1";
-
     private SandGlassService sandGlassService = null;
     private Intent serviceIntent = null;
-
     private EditText time_input = null;
     private TextView current_alarm = null;
     private Button btn_start = null;
     private Button btn_cancel = null;
-
     private final UIReceiver uiReceiver = new UIReceiver();
-
-    private void initUI() {
-        time_input = findViewById(R.id.time_input);
-        current_alarm = findViewById(R.id.current_alarm);
-        btn_start = findViewById(R.id.btn_start);
-        btn_cancel = findViewById(R.id.btn_cancel);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,54 +42,8 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         setContentView(R.layout.activity_main);
         initUI();
-
-        btn_start.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                String s = time_input.getText().toString();
-                Toast toast = Toast.makeText(
-                        MainActivity.this,
-                        R.string.on_invalid_input,
-                        Toast.LENGTH_LONG);
-                long minutes;
-
-                try {
-                    minutes = Long.parseLong(s);
-                } catch (NumberFormatException nfe) {
-                    Log.e(tag, "Input is not a number: \"" + s + "\"");
-                    toast.show();
-                    return;
-                }
-
-                if (minutes <= 0) {
-                    toast.show();
-                    return;
-                }
-                if (sandGlassService != null) {
-                    sandGlassService.setSandGlass(minutes);
-                    updateUI();
-                } else {
-                    Toast.makeText(
-                            MainActivity.this,
-                            R.string.service_not_available,
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-        btn_cancel.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.e(tag, "on btn_cancel clicked");
-                if (sandGlassService == null) {
-                    Toast.makeText(
-                            MainActivity.this,
-                            R.string.service_not_available,
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-                sandGlassService.cancelSandGlass();
-                updateUI();
-            }
-        });
+        btn_start.setOnClickListener(this);
+        btn_cancel.setOnClickListener(this);
     }
 
     @Override
@@ -145,6 +90,81 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Log.e(tag, "Call onDestroy");
     }
 
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.e(tag, "Call onServiceConnected");
+        sandGlassService = ((SandGlassService.SandGlassBinder)service).getService();
+        updateUI();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        Log.e(tag, "Call onServiceDisconnected");
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_start:
+                onStartClicked(view);
+                break;
+            case R.id.btn_cancel:
+                onCancelClicked(view);
+                break;
+        }
+    }
+
+    private void initUI() {
+        time_input = findViewById(R.id.time_input);
+        current_alarm = findViewById(R.id.current_alarm);
+        btn_start = findViewById(R.id.btn_start);
+        btn_cancel = findViewById(R.id.btn_cancel);
+    }
+
+    private void onStartClicked(View view) {
+        String s = time_input.getText().toString();
+        Toast toast = Toast.makeText(
+                this,
+                R.string.on_invalid_input,
+                Toast.LENGTH_LONG);
+        long minutes;
+
+        try {
+            minutes = Long.parseLong(s);
+        } catch (NumberFormatException nfe) {
+            Log.e(tag, "Input is not a number: \"" + s + "\"");
+            toast.show();
+            return;
+        }
+
+        if (minutes <= 0) {
+            toast.show();
+            return;
+        }
+        if (sandGlassService != null) {
+            sandGlassService.setSandGlass(minutes);
+            updateUI();
+        } else {
+            Toast.makeText(
+                    this,
+                    R.string.service_not_available,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void onCancelClicked(View view) {
+        Log.e(tag, "on btn_cancel clicked");
+        if (sandGlassService == null) {
+            Toast.makeText(
+                    this,
+                    R.string.service_not_available,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        sandGlassService.cancelSandGlass();
+        updateUI();
+    }
+
     // Only one alarm is allowed. A new alarm can be set only after
     // the current valid alarm is cancelled or there is no valid alarm.
     //
@@ -179,18 +199,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
             t = getString(R.string.no_active_alarm);
         }
         current_alarm.setText(t);
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        Log.e(tag, "Call onServiceConnected");
-        sandGlassService = ((SandGlassService.SandGlassBinder)service).getService();
-        updateUI();
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        Log.e(tag, "Call onServiceDisconnected");
     }
 
     public class UIReceiver extends BroadcastReceiver {
