@@ -19,10 +19,8 @@ import java.nio.file.Paths;
 import java.util.Calendar;
 
 public class SandGlassService extends Service {
-    private static final String tag =  "SandGlassService";
+    private static final String tag = "SandGlassService";
     private static final String timestampFile = "timestamp.txt";
-
-    private MediaPlayer player = new MediaPlayer();
     private final SandGlassBinder sandGlassBinder = new SandGlassBinder();
     private long sandGlassInMilli = 0;
 
@@ -70,7 +68,6 @@ public class SandGlassService extends Service {
         super.onDestroy();
         Log.e(tag, "Call onDestroy");
         saveTimestamp();
-        player.release();
     }
 
     private void readTimestamp() {
@@ -198,14 +195,15 @@ public class SandGlassService extends Service {
     public void startBeep() {
         Log.e(tag, "Call startBeep");
         try {
+            MediaPlayer player = new MediaPlayer();
             AssetManager am = getAssets();
-
             AssetFileDescriptor afd = am.openFd("beep.wav");
             player.reset();
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
                     mediaPlayer.reset();
+                    mediaPlayer.release();
                     Log.e(tag, "Call onCompletion");
                 }
             });
@@ -216,11 +214,6 @@ public class SandGlassService extends Service {
             Log.e(tag, "Failed to play sound");
             Log.e(tag, e.toString());
         }
-    }
-
-    public void stopBeep() {
-        Log.e(tag, "Call stopBeep");
-        player.stop();
     }
 
     public class SandGlassBinder extends Binder {
